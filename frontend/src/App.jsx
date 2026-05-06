@@ -1,3 +1,4 @@
+import AISuggest from "./AISuggest";
 import { useEffect, useState } from "react";
 import { supabase } from "./supabase";
 import Chat from "./chat";
@@ -128,7 +129,7 @@ const [activeChat, setActiveChat] = useState(null);
   }
 
   async function handleRegister() {
-    if (!authEmail || !authPass || !authName || !authSkills) return showToast("Sab fields bharo", "error");
+    if (!authEmail || !authPass || !authName || !authSkills) return showToast("Please fill all fields", "error");
     setAuthLoading(true);
     const { data, error } = await supabase.auth.signUp({ email: authEmail, password: authPass });
     if (error) { setAuthLoading(false); return showToast(error.message, "error"); }
@@ -140,7 +141,7 @@ const [activeChat, setActiveChat] = useState(null);
   }
 
   async function handleLogin() {
-    if (!authEmail || !authPass) return showToast("Sab fields bharo", "error");
+    if (!authEmail || !authPass) return showToast("Please fill all fields", "error");
     setAuthLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email: authEmail, password: authPass });
     setAuthLoading(false);
@@ -155,7 +156,7 @@ const [activeChat, setActiveChat] = useState(null);
   }
 
   async function saveProfile() {
-    if (!editName || !editSkills) return showToast("Fields khali nahi chahiye", "error");
+    if (!editName || !editSkills) return showToast("Fields cannot be empty", "error");
     const { data: updated } = await supabase.from("users").update({ name: editName, skills: editSkills }).eq("auth_id", currentUser.id).select().single();
     if (!updated) return showToast("Update fail hua", "error");
     setProfile(updated);
@@ -165,8 +166,8 @@ const [activeChat, setActiveChat] = useState(null);
   }
 
   async function handleCreateTeam() {
-    if (!currentUser) return showToast("Pehle login karo", "error");
-    if (!teamName || !teamSkills) return showToast("Sab fields bharo", "error");
+    if (!currentUser) return showToast("Please login first", "error");
+    if (!teamName || !teamSkills) return showToast("Please fill all fields", "error");
     setCreating(true);
     const { error } = await supabase.from("teams").insert([{ team_name: teamName.trim(), required_skills: teamSkills.trim(), description: teamDesc.trim(), created_by: profile?.name || "Anonymous", creator_id: currentUser.id, members: JSON.stringify([profile?.name || "Anonymous"]) }]);
     setCreating(false);
@@ -178,7 +179,7 @@ const [activeChat, setActiveChat] = useState(null);
   }
 
   async function handleJoinTeam(team) {
-    if (!currentUser) return showToast("Pehle login karo", "error");
+    if (!currentUser) return showToast("Please login first", "error");
     if (joinedTeams.includes(team.id)) return showToast("Already joined!", "error");
     const members = safeMembers(team.members);
     if (members.includes(profile?.name)) { setJoinedTeams(function(p) { return [...p, team.id]; }); return showToast("Already a member!", "error"); }
@@ -275,6 +276,7 @@ const [activeChat, setActiveChat] = useState(null);
                     <>
                       <input value={editName} onChange={function(e) { setEditName(e.target.value); }} placeholder="Name" style={{ width: "100%", padding: "8px 12px", borderRadius: 8, background: theme.cardAlt, border: `1px solid ${theme.border}`, color: theme.text, fontSize: 14, marginBottom: 8, boxSizing: "border-box" }} />
                       <input value={editSkills} onChange={function(e) { setEditSkills(e.target.value); }} placeholder="Skills" style={{ width: "100%", padding: "8px 12px", borderRadius: 8, background: theme.cardAlt, border: `1px solid ${theme.border}`, color: theme.text, fontSize: 14, marginBottom: 8, boxSizing: "border-box" }} />
+        <AISuggest theme={theme} onSelect={function(skill) { setEditSkills(function(prev) { return prev ? prev + ", " + skill : skill; }); }} />
                       <div style={{ display: "flex", gap: 8 }}>
                         <button onClick={saveProfile} style={{ padding: "8px 20px", borderRadius: 8, border: "none", background: "#6366f1", color: "#fff", cursor: "pointer", fontSize: 13 }}>Save</button>
                         <button onClick={function() { setEditMode(false); }} style={{ padding: "8px 20px", borderRadius: 8, border: `1px solid ${theme.border}`, background: "transparent", color: theme.muted, cursor: "pointer", fontSize: 13 }}>Cancel</button>
@@ -392,7 +394,7 @@ const [activeChat, setActiveChat] = useState(null);
           <div>
             <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 16, padding: 20, marginBottom: 20 }}>
               <h2 style={{ fontWeight: 700, fontSize: 18, color: theme.text, margin: "0 0 6px" }}>Create a Team</h2>
-              <p style={{ fontSize: 13, color: theme.muted, margin: "0 0 20px" }}>Apni team banao aur best candidates dhundo</p>
+              <p style={{ fontSize: 13, color: theme.muted, margin: "0 0 20px" }}>Type a messaCreate your team and find the best candidatesge...</p>
               <input placeholder="Team Name" value={teamName} onChange={function(e) { setTeamName(e.target.value); }} style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: theme.cardAlt, border: `1px solid ${theme.border}`, color: theme.text, fontSize: 14, marginBottom: 12, boxSizing: "border-box" }} />
               <input placeholder="Required Skills (e.g. React, Node, ML)" value={teamSkills} onChange={function(e) { setTeamSkills(e.target.value); }} style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: theme.cardAlt, border: `1px solid ${theme.border}`, color: theme.text, fontSize: 14, marginBottom: 12, boxSizing: "border-box" }} />
               <textarea placeholder="Description (optional)" value={teamDesc} onChange={function(e) { setTeamDesc(e.target.value); }} style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: theme.cardAlt, border: `1px solid ${theme.border}`, color: theme.text, fontSize: 14, marginBottom: 16, boxSizing: "border-box", height: 80, resize: "none" }} />
