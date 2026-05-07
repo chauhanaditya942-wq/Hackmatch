@@ -183,7 +183,7 @@ function InvitePanel({ invites, teams, currentUser, profile, onAccept, onDecline
   );
 }
 
-const TABS = ["Home", "People", "Teams", "Create"];
+const TABS = ["Home", "People", "Teams", "My Teams", "Create"];
 
 export default function App() {
   const [users, setUsers] = useState([]);
@@ -615,6 +615,9 @@ export default function App() {
 
         {/* ── CREATE ── */}
         {tab === 3 && (
+  <Chat joinedTeams={joinedTeams} currentUser={currentUser} profile={profile} theme={theme} allTeams={teams} onBack={function() { setTab(0); }} />
+)}
+        {tab === 4 && (
           <div>
             <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 16, padding: 20, marginBottom: 20 }}>
               <h2 style={{ fontWeight: 700, fontSize: 18, color: theme.text, margin: "0 0 6px" }}>Create a Team</h2>
