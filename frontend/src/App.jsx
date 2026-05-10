@@ -175,7 +175,10 @@ export default function App() {
   const [activeChat, setActiveChat] = useState(null);
   const [suggestTeam, setSuggestTeam] = useState(null);
   const [showInvites, setShowInvites] = useState(false);
-
+const [editBio, setEditBio] = useState("");
+const [editExperience, setEditExperience] = useState("");
+const [editGithub, setEditGithub] = useState("");
+const [editLinkedin, setEditLinkedin] = useState("");
   const theme = darkMode ? dark : light;
 
   useEffect(() => {
@@ -194,11 +197,24 @@ export default function App() {
     setTimeout(function() { setToast(null); }, 3000);
   };
 
-  async function fetchProfile(uid) {
-    const { data } = await supabase.from("users").select("*").eq("auth_id", uid).single();
-    if (data) setProfile(data);
+ async function fetchProfile(uid) {
+  const { data } = await supabase.from("users").select("*").eq("auth_id", uid).single();
+  if (data) {
+    setProfile(data);
+  } else {
+    const sessionData = await supabase.auth.getSession();
+    const user = sessionData.data.session?.user;
+    if (user) {
+      const { data: newProfile } = await supabase.from("users").insert([{
+        name: user.user_metadata?.full_name || user.email?.split("@")[0] || "User",
+        email: user.email,
+        skills: "",
+        auth_id: uid,
+      }]).select().single();
+      if (newProfile) setProfile(newProfile);
+    }
   }
-
+}
   async function fetchData() {
     const { data: u } = await supabase.from("users").select("*");
     const { data: t } = await supabase.from("teams").select("*");
@@ -235,15 +251,22 @@ export default function App() {
     showToast("Logged out!");
   }
 
-  async function saveProfile() {
-    if (!editName || !editSkills) return showToast("Fields cannot be empty", "error");
-    const { data: updated } = await supabase.from("users").update({ name: editName, skills: editSkills }).eq("auth_id", currentUser.id).select().single();
-    if (!updated) return showToast("Update failed", "error");
-    setProfile(updated);
-    setEditMode(false);
-    fetchData();
-    showToast("Profile updated! ✅");
-  }
+ async function saveProfile() {
+  if (!editName || !editSkills) return showToast("Fields cannot be empty", "error");
+  const { data: updated } = await supabase.from("users").update({
+    name: editName,
+    skills: editSkills,
+    bio: editBio,
+    experience: editExperience,
+    github: editGithub,
+    linkedin: editLinkedin,
+  }).eq("auth_id", currentUser.id).select().single();
+  if (!updated) return showToast("Update failed", "error");
+  setProfile(updated);
+  setEditMode(false);
+  fetchData();
+  showToast("Profile updated! ✅");
+}
 
   async function handleCreateTeam() {
     if (!currentUser) return showToast("Please login first", "error");
@@ -419,6 +442,16 @@ export default function App() {
                     <>
                       <input value={editName} onChange={e => setEditName(e.target.value)} placeholder="Name" className="hm-input" style={{ ...inputStyle, marginBottom: 10 }} />
                       <input value={editSkills} onChange={e => setEditSkills(e.target.value)} placeholder="Skills" className="hm-input" style={{ ...inputStyle, marginBottom: 10 }} />
+                      <input value={editBio} onChange={e => setEditBio(e.target.value)} placeholder="Bio (e.g. Full stack dev from Delhi)" className="hm-input" style={{ ...inputStyle, marginBottom: 10 }} />
+<select value={editExperience} onChange={e => setEditExperience(e.target.value)} className="hm-input" style={{ ...inputStyle, marginBottom: 10 }}>
+  <option value="">Select Experience Level</option>
+  <option value="Beginner">Beginner (0-1 years)</option>
+  <option value="Intermediate">Intermediate (1-3 years)</option>
+  <option value="Advanced">Advanced (3+ years)</option>
+  <option value="Expert">Expert (5+ years)</option>
+</select>
+<input value={editGithub} onChange={e => setEditGithub(e.target.value)} placeholder="GitHub URL" className="hm-input" style={{ ...inputStyle, marginBottom: 10 }} />
+<input value={editLinkedin} onChange={e => setEditLinkedin(e.target.value)} placeholder="LinkedIn URL" className="hm-input" style={{ ...inputStyle, marginBottom: 10 }} />
                       <AISuggest theme={theme} onSelect={skill => setEditSkills(prev => prev ? prev + ", " + skill : skill)} />
                       <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
                         <button onClick={saveProfile} className="hm-btn-primary hm-ripple" style={primaryBtn}>Save</button>
@@ -431,8 +464,19 @@ export default function App() {
                         <div>
                           <h2 style={{ fontWeight: 800, fontSize: 19, color: theme.text, margin: "0 0 3px" }}>{profile?.name}</h2>
                           <p style={{ color: theme.muted, fontSize: 12, margin: "0 0 10px" }}>{profile?.email || currentUser?.email}</p>
+                          {profile?.experience && <span style={{ fontSize: 11, background: theme.accent + "18", color: theme.accent, border: `1px solid ${theme.accent}44`, borderRadius: 99, padding: "2px 10px", fontWeight: 700, marginRight: 6 }}>{profile.experience}</span>}
+{profile?.bio && <p style={{ fontSize: 13, color: theme.muted, margin: "8px 0" }}>{profile.bio}</p>}
+<div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+  {profile?.github && <a href={profile.github} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: theme.accent, textDecoration: "none", fontWeight: 600 }}>GitHub →</a>}
+  {profile?.linkedin && <a href={profile.linkedin} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: theme.accent, textDecoration: "none", fontWeight: 600 }}>LinkedIn →</a>}
+</div>
                         </div>
-                        <button onClick={() => { setEditMode(true); setEditName(profile?.name || ""); setEditSkills(profile?.skills || ""); }} className="hm-btn-ghost" style={ghostBtn}>Edit Profile</button>
+                        <button onClick={() => { setEditMode(true); setEditName(profile?.name || ""); setEditSkills(profile?.skills || "");
+                          setEditBio(profile?.bio || "");
+setEditExperience(profile?.experience || "");
+setEditGithub(profile?.github || "");
+setEditLinkedin(profile?.linkedin || "");
+                         }} className="hm-btn-ghost" style={ghostBtn}>Edit Profile</button>
                       </div>
                       <div>{profile?.skills?.split(",").map((s, i) => <SkillBadge key={i} skill={s} highlight theme={theme} />)}</div>
                     </>
