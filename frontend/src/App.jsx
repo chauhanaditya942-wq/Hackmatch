@@ -21,10 +21,17 @@ function safeMembers(raw) {
   return [];
 }
 
-function Avatar({ name, size = 40, className = "" }) {
+function Avatar({ name, size = 40, className = "", url = "" }) {
   const n = name || "?";
   const colors = ["#7c3aed","#a855f7","#6366f1","#ec4899","#f59e0b","#10b981","#3b82f6"];
   const color = colors[n.charCodeAt(0) % colors.length];
+  if (url) {
+    return (
+      <div className={`hm-avatar ${className}`} style={{ width: size, height: size, borderRadius: "50%", overflow: "hidden", flexShrink: 0, boxShadow: `0 2px 8px ${color}44` }}>
+        <img src={url} alt={n} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      </div>
+    );
+  }
   return (
     <div className={`hm-avatar ${className}`} style={{ width: size, height: size, borderRadius: "50%", background: `linear-gradient(135deg, ${color}, ${color}99)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: size * 0.38, flexShrink: 0, boxShadow: `0 2px 8px ${color}44` }}>
       {n.charAt(0).toUpperCase()}
@@ -250,7 +257,16 @@ const [editLinkedin, setEditLinkedin] = useState("");
     setJoinedTeams([]);
     showToast("Logged out!");
   }
-
+async function handleAvatarUpload(file) {
+  if (!file || !currentUser) return;
+  const ext = file.name.split(".").pop();
+  const path = `${currentUser.id}.${ext}`;
+  const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+  if (error) return showToast("Upload failed", "error");
+  const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+  const { data: updated } = await supabase.from("users").update({ avatar_url: data.publicUrl }).eq("auth_id", currentUser.id).select().single();
+  if (updated) { setProfile(updated); showToast("Photo updated! 📸"); }
+}
  async function saveProfile() {
   if (!editName || !editSkills) return showToast("Fields cannot be empty", "error");
   const { data: updated } = await supabase.from("users").update({
@@ -436,7 +452,13 @@ const [editLinkedin, setEditLinkedin] = useState("");
           <div>
             <div style={{ ...cardStyle, background: `linear-gradient(135deg, ${theme.card}, ${theme.cardAlt})` }}>
               <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
-                <Avatar className="hm-avatar" name={profile?.name} size={58} />
+                <div style={{ position: "relative", flexShrink: 0 }}>
+  <Avatar className="hm-avatar" name={profile?.name} size={58} url={profile?.avatar_url || ""} />
+  <label style={{ position: "absolute", bottom: 0, right: 0, width: 22, height: 22, borderRadius: "50%", background: theme.accent, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 12 }}>
+    📷
+    <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files[0]) handleAvatarUpload(e.target.files[0]); }} />
+  </label>
+</div>
                 <div style={{ flex: 1 }}>
                   {editMode ? (
                     <>
