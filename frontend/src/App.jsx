@@ -23,33 +23,33 @@ function safeMembers(raw) {
 
 function Avatar({ name, size = 40 }) {
   const n = name || "?";
-  const colors = ["#6366f1","#8b5cf6","#ec4899","#f59e0b","#10b981","#3b82f6","#ef4444"];
+  const colors = ["#7c3aed","#a855f7","#6366f1","#ec4899","#f59e0b","#10b981","#3b82f6"];
   const color = colors[n.charCodeAt(0) % colors.length];
   return (
-    <div style={{ width: size, height: size, borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: size * 0.38, flexShrink: 0 }}>
+    <div style={{ width: size, height: size, borderRadius: "50%", background: `linear-gradient(135deg, ${color}, ${color}99)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: size * 0.38, flexShrink: 0, boxShadow: `0 2px 8px ${color}44` }}>
       {n.charAt(0).toUpperCase()}
     </div>
   );
 }
 
-function SkillBadge({ skill, highlight = false }) {
+function SkillBadge({ skill, highlight = false, theme }) {
   return (
-    <span style={{ display: "inline-block", padding: "2px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: 600, background: highlight ? "#6366f122" : "#ffffff0a", color: highlight ? "#818cf8" : "#94a3b8", border: `1px solid ${highlight ? "#6366f144" : "#ffffff14"}`, margin: "2px 3px 2px 0" }}>
+    <span style={{ display: "inline-block", padding: "3px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: 600, background: highlight ? (theme?.accent + "18") : theme?.cardAlt, color: highlight ? theme?.accent : theme?.muted, border: `1px solid ${highlight ? theme?.accent + "44" : theme?.border}`, margin: "2px 3px 2px 0" }}>
       {skill.trim()}
     </span>
   );
 }
 
-function MatchBar({ percent }) {
+function MatchBar({ percent, theme }) {
   const color = percent >= 80 ? "#10b981" : percent >= 50 ? "#f59e0b" : "#ef4444";
   return (
-    <div style={{ marginTop: 8 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-        <span style={{ fontSize: 11, color: "#64748b" }}>MATCH</span>
-        <span style={{ fontSize: 13, fontWeight: 700, color }}>{percent}%</span>
+    <div style={{ marginTop: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+        <span style={{ fontSize: 10, color: theme?.muted, letterSpacing: 1, fontWeight: 600 }}>MATCH SCORE</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color }}>{percent}%</span>
       </div>
-      <div style={{ height: 4, borderRadius: 99, background: "#ffffff0f", overflow: "hidden" }}>
-        <div style={{ height: "100%", width: `${percent}%`, borderRadius: 99, background: `linear-gradient(90deg, ${color}88, ${color})` }} />
+      <div style={{ height: 5, borderRadius: 99, background: theme?.cardAlt, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${percent}%`, borderRadius: 99, background: `linear-gradient(90deg, ${color}88, ${color})`, transition: "width 0.8s ease" }} />
       </div>
     </div>
   );
@@ -57,17 +57,14 @@ function MatchBar({ percent }) {
 
 function Toast({ toast }) {
   return (
-    <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, background: toast.type === "error" ? "#ef444422" : "#10b98122", border: `1px solid ${toast.type === "error" ? "#ef4444" : "#10b981"}`, color: toast.type === "error" ? "#fca5a5" : "#6ee7b7", padding: "12px 20px", borderRadius: 12, fontSize: 13, fontWeight: 500 }}>
+    <div style={{ position: "fixed", top: 24, right: 24, zIndex: 9999, background: toast.type === "error" ? "#fef2f2" : "#f0fdf4", border: `1px solid ${toast.type === "error" ? "#fecaca" : "#bbf7d0"}`, color: toast.type === "error" ? "#dc2626" : "#16a34a", padding: "12px 20px", borderRadius: 12, fontSize: 13, fontWeight: 600, boxShadow: "0 4px 24px #00000018" }}>
       {toast.msg}
     </div>
   );
 }
 
-// ── Smart Suggestions Modal ───────────────────────────────────────────────────
 function SuggestionsModal({ team, users, invites, onInvite, onClose, theme }) {
   const members = safeMembers(team.members);
-
-  // Find top matching users who are not already members
   const suggestions = users
     .filter(u => !members.includes(u.name))
     .map(u => ({ user: u, percent: getMatchPercent(u.skills, team.required_skills) }))
@@ -76,62 +73,42 @@ function SuggestionsModal({ team, users, invites, onInvite, onClose, theme }) {
     .slice(0, 10);
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, background: "#000000cc" }}
-      onClick={onClose}>
-      <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 20, padding: 28, width: "100%", maxWidth: 480, maxHeight: "80vh", overflowY: "auto" }}
-        onClick={e => e.stopPropagation()}>
-
-        {/* Header */}
+    <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, background: "#0f172acc", backdropFilter: "blur(4px)" }} onClick={onClose}>
+      <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 24, padding: 28, width: "100%", maxWidth: 480, maxHeight: "80vh", overflowY: "auto", boxShadow: "0 24px 64px #7c3aed18" }} onClick={e => e.stopPropagation()}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-          <h2 style={{ fontWeight: 700, fontSize: 18, color: theme.text, margin: 0 }}>Suggested Members</h2>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: theme.muted, fontSize: 22, cursor: "pointer", lineHeight: 1 }}>×</button>
+          <h2 style={{ fontWeight: 800, fontSize: 18, color: theme.text, margin: 0 }}>Suggested Members</h2>
+          <button onClick={onClose} style={{ background: theme.cardAlt, border: `1px solid ${theme.border}`, borderRadius: 8, width: 32, height: 32, color: theme.muted, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
         </div>
-        <p style={{ fontSize: 13, color: theme.muted, marginBottom: 20 }}>
-          Top users matching <b style={{ color: theme.text }}>{team.team_name}</b>'s required skills
-        </p>
-
-        {suggestions.length === 0 && (
-          <div style={{ textAlign: "center", color: theme.muted, padding: 32, fontSize: 13 }}>
-            No matching users found right now.
-          </div>
-        )}
-
-        {suggestions.map(({ user, percent }) => {
+        <p style={{ fontSize: 13, color: theme.muted, marginBottom: 20 }}>Top users matching <b style={{ color: theme.accent }}>{team.team_name}</b>'s skills</p>
+        {suggestions.length === 0 && <div style={{ textAlign: "center", color: theme.muted, padding: 32, fontSize: 13 }}>No matching users found.</div>}
+        {suggestions.map(function({ user, percent }) {
           const alreadyInvited = invites.some(inv => inv.team_id === team.id && inv.user_id === user.id);
           const color = percent >= 80 ? "#10b981" : percent >= 50 ? "#f59e0b" : "#ef4444";
           return (
-            <div key={user.id} style={{ background: theme.cardAlt, border: `1px solid ${theme.border}`, borderRadius: 12, padding: 14, marginBottom: 10 }}>
+            <div key={user.id} style={{ background: theme.cardAlt, border: `1px solid ${theme.border}`, borderRadius: 14, padding: 16, marginBottom: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <Avatar name={user.name || "?"} size={40} />
+                <Avatar name={user.name} size={42} />
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontWeight: 600, fontSize: 14, color: theme.text }}>{user.name}</span>
-                    <span style={{ fontSize: 12, fontWeight: 700, color }}>{percent}% match</span>
+                    <span style={{ fontWeight: 700, fontSize: 14, color: theme.text }}>{user.name}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color, background: color + "15", border: `1px solid ${color}44`, borderRadius: 99, padding: "2px 10px" }}>{percent}%</span>
                   </div>
-                  <div style={{ marginTop: 4 }}>
-                    {user.skills?.split(",").map((s, i) => {
-                      const required = team.required_skills?.toLowerCase().split(",").map(x => x.trim()) || [];
-                      return <SkillBadge key={i} skill={s} highlight={required.includes(s.trim().toLowerCase())} />;
+                  <div style={{ marginTop: 6 }}>
+                    {user.skills?.split(",").map(function(s, i) {
+                      const req = team.required_skills?.toLowerCase().split(",").map(x => x.trim()) || [];
+                      return <SkillBadge key={i} skill={s} highlight={req.includes(s.trim().toLowerCase())} theme={theme} />;
                     })}
                   </div>
                 </div>
               </div>
-
-              {/* Match bar */}
-              <div style={{ marginTop: 8, height: 3, borderRadius: 99, background: "#ffffff0f", overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${percent}%`, borderRadius: 99, background: `linear-gradient(90deg, ${color}88, ${color})`, transition: "width 0.8s ease" }} />
+              <div style={{ marginTop: 10, height: 4, borderRadius: 99, background: theme.border, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${percent}%`, borderRadius: 99, background: `linear-gradient(90deg, ${color}88, ${color})` }} />
               </div>
-
-              {/* Invite button */}
               <div style={{ marginTop: 10, display: "flex", justifyContent: "flex-end" }}>
                 {alreadyInvited ? (
-                  <span style={{ fontSize: 11, color: "#f59e0b", background: "#f59e0b11", border: "1px solid #f59e0b33", borderRadius: 99, padding: "4px 12px", fontWeight: 600 }}>
-                    ⏳ Invite Sent
-                  </span>
+                  <span style={{ fontSize: 11, color: "#f59e0b", background: "#f59e0b11", border: "1px solid #f59e0b33", borderRadius: 99, padding: "4px 12px", fontWeight: 600 }}>⏳ Invite Sent</span>
                 ) : (
-                  <button onClick={() => onInvite(user, team)} style={{ padding: "6px 16px", borderRadius: 8, border: "1px solid #6366f144", background: "#6366f111", color: "#818cf8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                    ✉️ Send Invite
-                  </button>
+                  <button onClick={() => onInvite(user, team)} style={{ padding: "6px 16px", borderRadius: 8, border: `1px solid ${theme.accent}44`, background: theme.accent + "11", color: theme.accent, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>✉️ Send Invite</button>
                 )}
               </div>
             </div>
@@ -142,39 +119,23 @@ function SuggestionsModal({ team, users, invites, onInvite, onClose, theme }) {
   );
 }
 
-// ── Invites Notification Panel ────────────────────────────────────────────────
 function InvitePanel({ invites, teams, currentUser, profile, onAccept, onDecline, onClose, theme }) {
   const myInvites = invites.filter(inv => inv.user_id === profile?.id && inv.status === "pending");
-
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, background: "#000000cc" }}
-      onClick={onClose}>
-      <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 20, padding: 28, width: "100%", maxWidth: 420, maxHeight: "80vh", overflowY: "auto" }}
-        onClick={e => e.stopPropagation()}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, background: "#0f172acc", backdropFilter: "blur(4px)" }} onClick={onClose}>
+      <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 24, padding: 28, width: "100%", maxWidth: 420, maxHeight: "80vh", overflowY: "auto", boxShadow: "0 24px 64px #7c3aed18" }} onClick={e => e.stopPropagation()}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <h2 style={{ fontWeight: 700, fontSize: 18, color: theme.text, margin: 0 }}>Team Invites</h2>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: theme.muted, fontSize: 22, cursor: "pointer" }}>×</button>
+          <h2 style={{ fontWeight: 800, fontSize: 18, color: theme.text, margin: 0 }}>Team Invites</h2>
+          <button onClick={onClose} style={{ background: theme.cardAlt, border: `1px solid ${theme.border}`, borderRadius: 8, width: 32, height: 32, color: theme.muted, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
         </div>
-
-        {myInvites.length === 0 && (
-          <div style={{ textAlign: "center", color: theme.muted, padding: 32, fontSize: 13 }}>No pending invites</div>
-        )}
-
+        {myInvites.length === 0 && <div style={{ textAlign: "center", color: theme.muted, padding: 32, fontSize: 13 }}>No pending invites</div>}
         {myInvites.map(inv => (
-          <div key={inv.id} style={{ background: theme.cardAlt, border: `1px solid ${theme.border}`, borderRadius: 12, padding: 16, marginBottom: 10 }}>
-            <p style={{ fontSize: 14, color: theme.text, marginBottom: 4 }}>
-              <b>{inv.invited_by}</b> invited you to join
-            </p>
-            <p style={{ fontSize: 16, fontWeight: 700, color: "#818cf8", marginBottom: 12 }}>
-              {inv.team_name}
-            </p>
+          <div key={inv.id} style={{ background: theme.cardAlt, border: `1px solid ${theme.border}`, borderRadius: 14, padding: 16, marginBottom: 10 }}>
+            <p style={{ fontSize: 13, color: theme.muted, marginBottom: 4 }}><b style={{ color: theme.text }}>{inv.invited_by}</b> invited you to join</p>
+            <p style={{ fontSize: 16, fontWeight: 800, color: theme.accent, marginBottom: 14 }}>{inv.team_name}</p>
             <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={() => onAccept(inv)} style={{ flex: 1, padding: "8px", borderRadius: 8, border: "1px solid #10b98144", background: "#10b98111", color: "#6ee7b7", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-                ✓ Accept
-              </button>
-              <button onClick={() => onDecline(inv)} style={{ flex: 1, padding: "8px", borderRadius: 8, border: "1px solid #ef444444", background: "#ef444411", color: "#fca5a5", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-                ✗ Decline
-              </button>
+              <button onClick={() => onAccept(inv)} style={{ flex: 1, padding: "9px", borderRadius: 10, border: "1px solid #10b98144", background: "#10b98111", color: "#10b981", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>✓ Accept</button>
+              <button onClick={() => onDecline(inv)} style={{ flex: 1, padding: "9px", borderRadius: 10, border: "1px solid #ef444444", background: "#ef444411", color: "#ef4444", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>✗ Decline</button>
             </div>
           </div>
         ))}
@@ -210,10 +171,8 @@ export default function App() {
   const [editSkills, setEditSkills] = useState("");
   const [editName, setEditName] = useState("");
   const [joinedTeams, setJoinedTeams] = useState([]);
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const [activeChat, setActiveChat] = useState(null);
-
-  // Smart suggestions state
   const [suggestTeam, setSuggestTeam] = useState(null);
   const [showInvites, setShowInvites] = useState(false);
 
@@ -221,19 +180,11 @@ export default function App() {
 
   useEffect(() => {
     supabase.auth.getSession().then(function({ data }) {
-      if (data.session) {
-        setCurrentUser(data.session.user);
-        fetchProfile(data.session.user.id);
-      }
+      if (data.session) { setCurrentUser(data.session.user); fetchProfile(data.session.user.id); }
     });
     supabase.auth.onAuthStateChange(function(event, session) {
-      if (session) {
-        setCurrentUser(session.user);
-        fetchProfile(session.user.id);
-      } else {
-        setCurrentUser(null);
-        setProfile(null);
-      }
+      if (session) { setCurrentUser(session.user); fetchProfile(session.user.id); }
+      else { setCurrentUser(null); setProfile(null); }
     });
     fetchData();
   }, []);
@@ -311,33 +262,24 @@ export default function App() {
     if (!currentUser) return showToast("Please login first", "error");
     if (joinedTeams.includes(team.id)) return showToast("Already joined!", "error");
     const members = safeMembers(team.members);
-    if (members.includes(profile?.name)) { setJoinedTeams(function(p) { return [...p, team.id]; }); return showToast("Already a member!", "error"); }
+    if (members.includes(profile?.name)) { setJoinedTeams(p => [...p, team.id]); return showToast("Already a member!", "error"); }
     members.push(profile?.name || "Anonymous");
     const { error } = await supabase.from("teams").update({ members: JSON.stringify(members) }).eq("id", team.id);
     if (error) return showToast("Error joining", "error");
-    setJoinedTeams(function(p) { return [...p, team.id]; });
+    setJoinedTeams(p => [...p, team.id]);
     showToast("Joined " + team.team_name + "! 🙌");
     fetchData();
   }
 
-  // ── Send Invite ─────────────────────────────────────────────────────────────
   async function handleSendInvite(user, team) {
     const alreadyInvited = invites.some(inv => inv.team_id === team.id && inv.user_id === user.id);
     if (alreadyInvited) return showToast("Invite already sent!", "error");
-    const { error } = await supabase.from("invites").insert([{
-      team_id: team.id,
-      team_name: team.team_name,
-      invited_by: profile?.name || "Anonymous",
-      user_id: user.id,
-      user_name: user.name,
-      status: "pending",
-    }]);
+    const { error } = await supabase.from("invites").insert([{ team_id: team.id, team_name: team.team_name, invited_by: profile?.name || "Anonymous", user_id: user.id, user_name: user.name, status: "pending" }]);
     if (error) return showToast("Error sending invite", "error");
     showToast("Invite sent to " + user.name + "! ✉️");
     fetchData();
   }
 
-  // ── Accept Invite ───────────────────────────────────────────────────────────
   async function handleAcceptInvite(invite) {
     const team = teams.find(t => t.id === invite.team_id);
     if (!team) return showToast("Team not found", "error");
@@ -350,7 +292,6 @@ export default function App() {
     fetchData();
   }
 
-  // ── Decline Invite ──────────────────────────────────────────────────────────
   async function handleDeclineInvite(invite) {
     await supabase.from("invites").update({ status: "declined" }).eq("id", invite.id);
     showToast("Invite declined");
@@ -358,48 +299,55 @@ export default function App() {
   }
 
   function getTopMatches(skillStr) {
-    return teams.map(function(t) { return { team: t, percent: getMatchPercent(skillStr, t.required_skills) }; }).filter(function(m) { return m.percent > 0; }).sort(function(a, b) { return b.percent - a.percent; }).slice(0, 5);
+    return teams.map(t => ({ team: t, percent: getMatchPercent(skillStr, t.required_skills) })).filter(m => m.percent > 0).sort((a, b) => b.percent - a.percent).slice(0, 5);
   }
 
   const activeSkills = profile?.skills || searchSkills;
   const topMatches = activeSkills ? getTopMatches(activeSkills) : [];
-  const filteredUsers = users.filter(function(u) { return u.name?.toLowerCase().includes(userSearch.toLowerCase()) || u.skills?.toLowerCase().includes(userSearch.toLowerCase()); });
-  const filteredTeams = teams.filter(function(t) { return t.team_name?.toLowerCase().includes(teamSearch.toLowerCase()) || t.required_skills?.toLowerCase().includes(teamSearch.toLowerCase()); });
-
-  // Count pending invites for current user
+  const filteredUsers = users.filter(u => u.name?.toLowerCase().includes(userSearch.toLowerCase()) || u.skills?.toLowerCase().includes(userSearch.toLowerCase()));
+  const filteredTeams = teams.filter(t => t.team_name?.toLowerCase().includes(teamSearch.toLowerCase()) || t.required_skills?.toLowerCase().includes(teamSearch.toLowerCase()));
   const pendingInviteCount = invites.filter(inv => inv.user_id === profile?.id && inv.status === "pending").length;
+
+  const inputStyle = { width: "100%", padding: "11px 16px", borderRadius: 12, background: theme.cardAlt, border: `1.5px solid ${theme.border}`, color: theme.text, fontSize: 14, boxSizing: "border-box", outline: "none", transition: "border 0.2s" };
+  const cardStyle = { background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 18, padding: 20, marginBottom: 12, boxShadow: "0 2px 12px #7c3aed08" };
+  const primaryBtn = { padding: "10px 22px", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${theme.accent}, #a855f7)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: `0 4px 16px ${theme.accent}33` };
+  const ghostBtn = { padding: "9px 18px", borderRadius: 10, border: `1.5px solid ${theme.border}`, background: "transparent", color: theme.muted, fontSize: 13, fontWeight: 600, cursor: "pointer" };
+  const joinBtn = (joined) => ({ padding: "7px 16px", borderRadius: 9, border: `1px solid ${joined ? "#10b98144" : theme.accent + "44"}`, background: joined ? "#10b98111" : theme.accent + "11", color: joined ? "#10b981" : theme.accent, fontSize: 12, fontWeight: 700, cursor: "pointer" });
 
   if (!currentUser) {
     return (
-      <div style={{ minHeight: "100vh", background: theme.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "sans-serif" }}>
+      <div style={{ minHeight: "100vh", background: theme.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "'Inter', sans-serif" }}>
         {toast && <Toast toast={toast} />}
-        <div style={{ width: "100%", maxWidth: 400, background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 20, padding: "36px 32px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-            <span style={{ fontWeight: 800, fontSize: 24, color: theme.text }}>HackMatch</span>
-            <button onClick={function() { setDarkMode(function(d) { return !d; }); }} style={{ background: theme.cardAlt, border: `1px solid ${theme.border}`, borderRadius: 8, padding: "6px 12px", cursor: "pointer", color: theme.text, fontSize: 13 }}>
-              {darkMode ? "Light" : "Dark"}
+        <div style={{ width: "100%", maxWidth: 420, background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 24, padding: "40px 36px", boxShadow: "0 24px 64px #7c3aed14" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+            <div>
+              <span style={{ fontWeight: 900, fontSize: 26, color: theme.text, letterSpacing: "-0.5px" }}>Hack</span>
+              <span style={{ fontWeight: 900, fontSize: 26, color: theme.accent, letterSpacing: "-0.5px" }}>Match</span>
+            </div>
+            <button onClick={() => setDarkMode(d => !d)} style={{ ...ghostBtn, padding: "6px 14px", fontSize: 12 }}>
+              {darkMode ? "☀️ Light" : "🌙 Dark"}
             </button>
           </div>
-          <p style={{ color: theme.muted, fontSize: 14, marginBottom: 24 }}>Find your hackathon team</p>
-          <div style={{ display: "flex", background: theme.cardAlt, borderRadius: 10, padding: 4, marginBottom: 24 }}>
-            {["login", "register"].map(function(m) {
-              return (
-                <button key={m} onClick={function() { setAuthMode(m); }} style={{ flex: 1, padding: 8, border: "none", borderRadius: 8, cursor: "pointer", background: authMode === m ? "#6366f1" : "transparent", color: authMode === m ? "#fff" : theme.muted, fontSize: 14, fontWeight: 500 }}>
-                  {m === "login" ? "Login" : "Register"}
-                </button>
-              );
-            })}
+          <p style={{ color: theme.muted, fontSize: 14, marginBottom: 28 }}>Find your perfect hackathon team ⚡</p>
+
+          <div style={{ display: "flex", background: theme.cardAlt, borderRadius: 12, padding: 4, marginBottom: 24 }}>
+            {["login", "register"].map(m => (
+              <button key={m} onClick={() => setAuthMode(m)} style={{ flex: 1, padding: "9px", border: "none", borderRadius: 9, cursor: "pointer", background: authMode === m ? theme.accent : "transparent", color: authMode === m ? "#fff" : theme.muted, fontSize: 13, fontWeight: 600, transition: "all 0.2s" }}>
+                {m === "login" ? "Login" : "Register"}
+              </button>
+            ))}
           </div>
+
           {authMode === "register" && (
             <>
-              <input placeholder="Full Name" value={authName} onChange={function(e) { setAuthName(e.target.value); }} style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: theme.cardAlt, border: `1px solid ${theme.border}`, color: theme.text, fontSize: 14, marginBottom: 12, boxSizing: "border-box" }} />
-              <input placeholder="Skills (e.g. React, ML, Node)" value={authSkills} onChange={function(e) { setAuthSkills(e.target.value); }} style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: theme.cardAlt, border: `1px solid ${theme.border}`, color: theme.text, fontSize: 14, marginBottom: 12, boxSizing: "border-box" }} />
+              <input placeholder="Full Name" value={authName} onChange={e => setAuthName(e.target.value)} style={{ ...inputStyle, marginBottom: 12 }} />
+              <input placeholder="Skills (e.g. React, ML, Node)" value={authSkills} onChange={e => setAuthSkills(e.target.value)} style={{ ...inputStyle, marginBottom: 12 }} />
             </>
           )}
-          <input placeholder="Email" type="email" value={authEmail} onChange={function(e) { setAuthEmail(e.target.value); }} style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: theme.cardAlt, border: `1px solid ${theme.border}`, color: theme.text, fontSize: 14, marginBottom: 12, boxSizing: "border-box" }} />
-          <input placeholder="Password" type="password" value={authPass} onChange={function(e) { setAuthPass(e.target.value); }} style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: theme.cardAlt, border: `1px solid ${theme.border}`, color: theme.text, fontSize: 14, marginBottom: 16, boxSizing: "border-box" }} />
-          <button onClick={authMode === "login" ? handleLogin : handleRegister} disabled={authLoading} style={{ width: "100%", padding: 12, borderRadius: 10, border: "none", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-            {authLoading ? "Loading..." : authMode === "login" ? "Login" : "Create Account"}
+          <input placeholder="Email" type="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} style={{ ...inputStyle, marginBottom: 12 }} />
+          <input placeholder="Password" type="password" value={authPass} onChange={e => setAuthPass(e.target.value)} style={{ ...inputStyle, marginBottom: 20 }} />
+          <button onClick={authMode === "login" ? handleLogin : handleRegister} disabled={authLoading} style={{ ...primaryBtn, width: "100%", padding: "13px", fontSize: 15 }}>
+            {authLoading ? "Loading..." : authMode === "login" ? "Login →" : "Create Account →"}
           </button>
         </div>
       </div>
@@ -407,204 +355,165 @@ export default function App() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: theme.bg, fontFamily: "sans-serif", color: theme.text }}>
+    <div style={{ minHeight: "100vh", background: theme.bg, fontFamily: "'Inter', sans-serif", color: theme.text }}>
       {toast && <Toast toast={toast} />}
+      {suggestTeam && <SuggestionsModal team={suggestTeam} users={users} invites={invites} onInvite={handleSendInvite} onClose={() => setSuggestTeam(null)} theme={theme} />}
+      {showInvites && <InvitePanel invites={invites} teams={teams} currentUser={currentUser} profile={profile} onAccept={handleAcceptInvite} onDecline={handleDeclineInvite} onClose={() => setShowInvites(false)} theme={theme} />}
 
-      {/* Smart Suggestions Modal */}
-      {suggestTeam && (
-        <SuggestionsModal
-          team={suggestTeam}
-          users={users}
-          invites={invites}
-          onInvite={handleSendInvite}
-          onClose={() => setSuggestTeam(null)}
-          theme={theme}
-        />
-      )}
-
-      {/* Invites Panel */}
-      {showInvites && (
-        <InvitePanel
-          invites={invites}
-          teams={teams}
-          currentUser={currentUser}
-          profile={profile}
-          onAccept={handleAcceptInvite}
-          onDecline={handleDeclineInvite}
-          onClose={() => setShowInvites(false)}
-          theme={theme}
-        />
-      )}
-
-      <header style={{ borderBottom: `1px solid ${theme.border}`, background: theme.card, position: "sticky", top: 0, zIndex: 100 }}>
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontWeight: 800, fontSize: 20, color: theme.text }}>HackMatch</span>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <button onClick={function() { setDarkMode(function(d) { return !d; }); }} style={{ background: theme.cardAlt, border: `1px solid ${theme.border}`, borderRadius: 8, padding: "6px 12px", cursor: "pointer", color: theme.text, fontSize: 12 }}>
-              {darkMode ? "Light" : "Dark"}
+      <header style={{ borderBottom: `1px solid ${theme.border}`, background: theme.card, position: "sticky", top: 0, zIndex: 100, boxShadow: "0 2px 16px #7c3aed08" }}>
+        <div style={{ maxWidth: 760, margin: "0 auto", padding: "13px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <span style={{ fontWeight: 900, fontSize: 20, color: theme.text, letterSpacing: "-0.5px" }}>Hack</span>
+            <span style={{ fontWeight: 900, fontSize: 20, color: theme.accent, letterSpacing: "-0.5px" }}>Match</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button onClick={() => setDarkMode(d => !d)} style={{ ...ghostBtn, padding: "6px 12px", fontSize: 12 }}>
+              {darkMode ? "☀️" : "🌙"}
             </button>
-
-            {/* Invite notification bell */}
-            <button onClick={() => setShowInvites(true)} style={{ position: "relative", background: theme.cardAlt, border: `1px solid ${theme.border}`, borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 16 }}>
+            <button onClick={() => setShowInvites(true)} style={{ position: "relative", ...ghostBtn, padding: "6px 12px", fontSize: 16 }}>
               🔔
-              {pendingInviteCount > 0 && (
-                <span style={{ position: "absolute", top: -4, right: -4, background: "#ef4444", color: "#fff", borderRadius: 99, fontSize: 9, fontWeight: 700, padding: "2px 5px", lineHeight: 1 }}>
-                  {pendingInviteCount}
-                </span>
-              )}
+              {pendingInviteCount > 0 && <span style={{ position: "absolute", top: -4, right: -4, background: "#ef4444", color: "#fff", borderRadius: 99, fontSize: 9, fontWeight: 700, padding: "2px 5px" }}>{pendingInviteCount}</span>}
             </button>
-
             <Avatar name={profile?.name || "U"} size={32} />
-            <span style={{ fontSize: 13, color: theme.muted }}>{profile?.name}</span>
-            <button onClick={handleLogout} style={{ padding: "7px 14px", borderRadius: 8, border: `1px solid ${theme.border}`, background: "transparent", color: theme.muted, fontSize: 12, cursor: "pointer" }}>Logout</button>
+            <span style={{ fontSize: 13, color: theme.muted, fontWeight: 500 }}>{profile?.name}</span>
+            <button onClick={handleLogout} style={{ ...ghostBtn, padding: "6px 14px", fontSize: 12 }}>Logout</button>
           </div>
         </div>
       </header>
 
-      <nav style={{ maxWidth: 720, margin: "0 auto", padding: "12px 20px", display: "flex", gap: 6 }}>
-        {TABS.map(function(t, i) {
-          return (
-            <button key={i} onClick={function() { setTab(i); }} style={{ padding: "8px 16px", borderRadius: 99, border: `1px solid ${tab === i ? theme.border : "transparent"}`, background: tab === i ? theme.cardAlt : "transparent", color: tab === i ? theme.text : theme.muted, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
-              {t}
-            </button>
-          );
-        })}
+      <nav style={{ maxWidth: 760, margin: "0 auto", padding: "14px 24px 0", display: "flex", gap: 2, borderBottom: `1px solid ${theme.border}`, background: theme.card }}>
+        {TABS.map((t, i) => (
+          <button key={i} onClick={() => setTab(i)} style={{ padding: "9px 18px", border: "none", background: "transparent", color: tab === i ? theme.accent : theme.muted, fontSize: 13, fontWeight: tab === i ? 700 : 500, cursor: "pointer", borderBottom: `2px solid ${tab === i ? theme.accent : "transparent"}`, marginBottom: -1, borderRadius: "8px 8px 0 0", transition: "all 0.2s" }}>
+            {t}
+          </button>
+        ))}
       </nav>
 
-      <main style={{ maxWidth: 720, margin: "0 auto", padding: "16px 20px 60px" }}>
+      <main style={{ maxWidth: 760, margin: "0 auto", padding: "24px 24px 80px" }}>
 
-        {/* ── HOME ── */}
         {tab === 0 && (
           <div>
-            <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 16, padding: 20, marginBottom: 12 }}>
+            <div style={{ ...cardStyle, background: `linear-gradient(135deg, ${theme.card}, ${theme.cardAlt})` }}>
               <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
-                <Avatar name={profile?.name} size={56} />
+                <Avatar name={profile?.name} size={58} />
                 <div style={{ flex: 1 }}>
                   {editMode ? (
                     <>
-                      <input value={editName} onChange={function(e) { setEditName(e.target.value); }} placeholder="Name" style={{ width: "100%", padding: "8px 12px", borderRadius: 8, background: theme.cardAlt, border: `1px solid ${theme.border}`, color: theme.text, fontSize: 14, marginBottom: 8, boxSizing: "border-box" }} />
-                      <input value={editSkills} onChange={function(e) { setEditSkills(e.target.value); }} placeholder="Skills" style={{ width: "100%", padding: "8px 12px", borderRadius: 8, background: theme.cardAlt, border: `1px solid ${theme.border}`, color: theme.text, fontSize: 14, marginBottom: 8, boxSizing: "border-box" }} />
-                      <AISuggest theme={theme} onSelect={function(skill) { setEditSkills(function(prev) { return prev ? prev + ", " + skill : skill; }); }} />
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <button onClick={saveProfile} style={{ padding: "8px 20px", borderRadius: 8, border: "none", background: "#6366f1", color: "#fff", cursor: "pointer", fontSize: 13 }}>Save</button>
-                        <button onClick={function() { setEditMode(false); }} style={{ padding: "8px 20px", borderRadius: 8, border: `1px solid ${theme.border}`, background: "transparent", color: theme.muted, cursor: "pointer", fontSize: 13 }}>Cancel</button>
+                      <input value={editName} onChange={e => setEditName(e.target.value)} placeholder="Name" style={{ ...inputStyle, marginBottom: 10 }} />
+                      <input value={editSkills} onChange={e => setEditSkills(e.target.value)} placeholder="Skills" style={{ ...inputStyle, marginBottom: 10 }} />
+                      <AISuggest theme={theme} onSelect={skill => setEditSkills(prev => prev ? prev + ", " + skill : skill)} />
+                      <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                        <button onClick={saveProfile} style={primaryBtn}>Save</button>
+                        <button onClick={() => setEditMode(false)} style={ghostBtn}>Cancel</button>
                       </div>
                     </>
                   ) : (
                     <>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <h2 style={{ fontWeight: 700, fontSize: 18, color: theme.text, margin: "0 0 4px 0" }}>{profile?.name}</h2>
-                        <button onClick={function() { setEditMode(true); setEditName(profile?.name || ""); setEditSkills(profile?.skills || ""); }} style={{ padding: "7px 14px", borderRadius: 8, border: `1px solid ${theme.border}`, background: "transparent", color: theme.muted, fontSize: 12, cursor: "pointer" }}>Edit</button>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                        <div>
+                          <h2 style={{ fontWeight: 800, fontSize: 19, color: theme.text, margin: "0 0 3px" }}>{profile?.name}</h2>
+                          <p style={{ color: theme.muted, fontSize: 12, margin: "0 0 10px" }}>{profile?.email || currentUser?.email}</p>
+                        </div>
+                        <button onClick={() => { setEditMode(true); setEditName(profile?.name || ""); setEditSkills(profile?.skills || ""); }} style={ghostBtn}>Edit Profile</button>
                       </div>
-                      <p style={{ color: theme.muted, fontSize: 12, margin: "0 0 8px" }}>{profile?.email || currentUser?.email}</p>
-                      <div>{profile?.skills?.split(",").map(function(s, i) { return <SkillBadge key={i} skill={s} highlight />; })}</div>
+                      <div>{profile?.skills?.split(",").map((s, i) => <SkillBadge key={i} skill={s} highlight theme={theme} />)}</div>
                     </>
                   )}
                 </div>
               </div>
             </div>
 
-            <h3 style={{ fontWeight: 700, fontSize: 13, color: theme.muted, margin: "24px 0 12px", letterSpacing: 1, textTransform: "uppercase" }}>Top Team Matches</h3>
-            {topMatches.length === 0 && <div style={{ textAlign: "center", color: theme.muted, padding: 32, background: theme.card, borderRadius: 16 }}>No matches found. Update your skills!</div>}
-            {topMatches.map(function(m) {
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "24px 0 14px" }}>
+              <h3 style={{ fontWeight: 700, fontSize: 12, color: theme.muted, letterSpacing: 1.5, textTransform: "uppercase", margin: 0 }}>Top Team Matches</h3>
+              <span style={{ fontSize: 11, color: theme.muted }}>{topMatches.length} found</span>
+            </div>
+
+            {topMatches.length === 0 && <div style={{ ...cardStyle, textAlign: "center", color: theme.muted, padding: 40 }}>No matches yet — update your skills! 🎯</div>}
+            {topMatches.map(m => {
               const members = safeMembers(m.team.members);
               const alreadyIn = joinedTeams.includes(m.team.id) || members.includes(profile?.name);
               return (
-                <div key={m.team.id} style={{ background: theme.card, border: "1px solid #6366f122", borderRadius: 16, padding: 20, marginBottom: 12 }}>
+                <div key={m.team.id} style={{ ...cardStyle, border: `1px solid ${theme.accent}22`, background: `linear-gradient(135deg, ${theme.card}, ${theme.cardAlt})` }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <div style={{ flex: 1 }}>
-                      <h3 style={{ fontWeight: 700, fontSize: 16, color: theme.text, margin: "0 0 4px" }}>{m.team.team_name}</h3>
+                      <h3 style={{ fontWeight: 800, fontSize: 16, color: theme.text, margin: "0 0 3px" }}>{m.team.team_name}</h3>
                       {m.team.description && <p style={{ fontSize: 13, color: theme.muted, margin: "0 0 6px" }}>{m.team.description}</p>}
-                      <p style={{ fontSize: 11, color: theme.muted, marginBottom: 6 }}>by {m.team.created_by || "Anonymous"} · {members.length} members</p>
-                      <div>{m.team.required_skills?.split(",").map(function(s, i) { return <SkillBadge key={i} skill={s} />; })}</div>
+                      <p style={{ fontSize: 11, color: theme.muted, marginBottom: 8 }}>by {m.team.created_by || "Anonymous"} · {members.length} members</p>
+                      <div>{m.team.required_skills?.split(",").map((s, i) => <SkillBadge key={i} skill={s} theme={theme} />)}</div>
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginLeft: 10 }}>
-                      <button onClick={function() { handleJoinTeam(m.team); }} style={{ padding: "7px 16px", borderRadius: 8, border: `1px solid ${alreadyIn ? "#10b98144" : "#6366f144"}`, background: alreadyIn ? "#10b98111" : "#6366f111", color: alreadyIn ? "#6ee7b7" : "#818cf8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                        {alreadyIn ? "Joined" : "Join"}
-                      </button>
-                      <button onClick={function() { setActiveChat(m.team); }} style={{ padding: "7px 16px", borderRadius: 8, border: "1px solid #6366f144", background: "#6366f111", color: "#818cf8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>💬 Chat</button>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginLeft: 12 }}>
+                      <button onClick={() => handleJoinTeam(m.team)} style={joinBtn(alreadyIn)}>{alreadyIn ? "✓ Joined" : "Join"}</button>
+                      <button onClick={() => setActiveChat(m.team)} style={{ ...joinBtn(false), borderColor: theme.accent + "44" }}>💬 Chat</button>
                     </div>
                   </div>
-                  <MatchBar percent={m.percent} />
+                  <MatchBar percent={m.percent} theme={theme} />
                 </div>
               );
             })}
 
-            <h3 style={{ fontWeight: 700, fontSize: 13, color: theme.muted, margin: "24px 0 12px", letterSpacing: 1, textTransform: "uppercase" }}>Stats</h3>
-            <div style={{ display: "flex", gap: 12 }}>
-              {[{ label: "Users", value: users.length, icon: "👥" }, { label: "Teams", value: teams.length, icon: "🏆" }, { label: "Best Match", value: (topMatches[0]?.percent ?? 0) + "%", icon: "⚡" }].map(function(s, i) {
-                return (
-                  <div key={i} style={{ flex: 1, background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 16, padding: "20px 16px", textAlign: "center" }}>
-                    <div style={{ fontSize: 26 }}>{s.icon}</div>
-                    <div style={{ fontSize: 26, fontWeight: 800, color: theme.text }}>{s.value}</div>
-                    <div style={{ fontSize: 10, color: theme.muted, letterSpacing: 1 }}>{s.label.toUpperCase()}</div>
-                  </div>
-                );
-              })}
+            <h3 style={{ fontWeight: 700, fontSize: 12, color: theme.muted, margin: "28px 0 14px", letterSpacing: 1.5, textTransform: "uppercase" }}>Platform Stats</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+              {[{ label: "Users", value: users.length, icon: "👥" }, { label: "Teams", value: teams.length, icon: "🏆" }, { label: "Best Match", value: (topMatches[0]?.percent ?? 0) + "%", icon: "⚡" }].map((s, i) => (
+                <div key={i} style={{ ...cardStyle, textAlign: "center", padding: 20, marginBottom: 0 }}>
+                  <div style={{ fontSize: 28, marginBottom: 6 }}>{s.icon}</div>
+                  <div style={{ fontSize: 28, fontWeight: 900, color: theme.accent, letterSpacing: "-1px" }}>{s.value}</div>
+                  <div style={{ fontSize: 10, color: theme.muted, letterSpacing: 1, fontWeight: 600, marginTop: 2 }}>{s.label.toUpperCase()}</div>
+                </div>
+              ))}
             </div>
           </div>
         )}
 
-        {/* ── PEOPLE ── */}
         {tab === 1 && (
           <div>
-            <input style={{ width: "100%", padding: "12px 16px", borderRadius: 12, background: theme.card, border: `1px solid ${theme.border}`, color: theme.text, fontSize: 14, marginBottom: 16, boxSizing: "border-box" }} placeholder="Search by name or skill..." value={userSearch} onChange={function(e) { setUserSearch(e.target.value); }} />
-            {filteredUsers.map(function(u) {
-              return (
-                <div key={u.id} style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 16, padding: 20, marginBottom: 12 }}>
-                  <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-                    <Avatar name={u.name} size={44} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <h3 style={{ fontWeight: 700, fontSize: 15, color: theme.text, margin: "0 0 4px" }}>{u.name}</h3>
-                        {u.auth_id === currentUser?.id && <span style={{ fontSize: 10, background: "#6366f122", color: "#818cf8", border: "1px solid #6366f144", borderRadius: 99, padding: "2px 8px" }}>You</span>}
-                      </div>
-                      <div>{u.skills?.split(",").map(function(s, i) { return <SkillBadge key={i} skill={s} />; })}</div>
+            <input style={{ ...inputStyle, marginBottom: 16 }} placeholder="🔍 Search by name or skill..." value={userSearch} onChange={e => setUserSearch(e.target.value)} />
+            {filteredUsers.length === 0 && <div style={{ ...cardStyle, textAlign: "center", color: theme.muted, padding: 40 }}>No users found</div>}
+            {filteredUsers.map(u => (
+              <div key={u.id} style={cardStyle}>
+                <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+                  <Avatar name={u.name} size={46} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                      <h3 style={{ fontWeight: 700, fontSize: 15, color: theme.text, margin: 0 }}>{u.name}</h3>
+                      {u.auth_id === currentUser?.id && <span style={{ fontSize: 10, background: theme.accent + "18", color: theme.accent, border: `1px solid ${theme.accent}44`, borderRadius: 99, padding: "2px 10px", fontWeight: 700 }}>You</span>}
                     </div>
+                    <div>{u.skills?.split(",").map((s, i) => <SkillBadge key={i} skill={s} theme={theme} />)}</div>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
 
-        {/* ── TEAMS ── */}
         {tab === 2 && (
           <div>
-            <input style={{ width: "100%", padding: "12px 16px", borderRadius: 12, background: theme.card, border: `1px solid ${theme.border}`, color: theme.text, fontSize: 14, marginBottom: 16, boxSizing: "border-box" }} placeholder="Search teams..." value={teamSearch} onChange={function(e) { setTeamSearch(e.target.value); }} />
-            {filteredTeams.map(function(t) {
+            <input style={{ ...inputStyle, marginBottom: 16 }} placeholder="🔍 Search teams or skills..." value={teamSearch} onChange={e => setTeamSearch(e.target.value)} />
+            {filteredTeams.length === 0 && <div style={{ ...cardStyle, textAlign: "center", color: theme.muted, padding: 40 }}>No teams found</div>}
+            {filteredTeams.map(t => {
               const members = safeMembers(t.members);
               const match = getMatchPercent(profile?.skills || "", t.required_skills);
               const alreadyIn = joinedTeams.includes(t.id) || members.includes(profile?.name);
               const isLeader = t.creator_id === currentUser?.id;
               return (
-                <div key={t.id} style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 16, padding: 20, marginBottom: 12 }}>
+                <div key={t.id} style={cardStyle}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                        <h3 style={{ fontWeight: 700, fontSize: 16, color: theme.text, margin: 0 }}>{t.team_name}</h3>
-                        {isLeader && <span style={{ fontSize: 10, background: "#f59e0b22", color: "#fcd34d", border: "1px solid #f59e0b44", borderRadius: 99, padding: "2px 8px", fontWeight: 600 }}>Leader</span>}
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                        <h3 style={{ fontWeight: 800, fontSize: 16, color: theme.text, margin: 0 }}>{t.team_name}</h3>
+                        {isLeader && <span style={{ fontSize: 10, background: "#f59e0b18", color: "#f59e0b", border: "1px solid #f59e0b44", borderRadius: 99, padding: "2px 8px", fontWeight: 700 }}>👑 Leader</span>}
                       </div>
                       {t.description && <p style={{ fontSize: 13, color: theme.muted, margin: "0 0 6px" }}>{t.description}</p>}
                       <p style={{ fontSize: 11, color: theme.muted, marginBottom: 8 }}>by {t.created_by || "Anonymous"} · {members.length} members</p>
-                      <div style={{ marginBottom: 8 }}>{t.required_skills?.split(",").map(function(s, i) { return <SkillBadge key={i} skill={s} />; })}</div>
+                      <div style={{ marginBottom: 8 }}>{t.required_skills?.split(",").map((s, i) => <SkillBadge key={i} skill={s} theme={theme} />)}</div>
                       <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                        {members.map(function(m, i) { return <span key={i} style={{ fontSize: 11, color: theme.muted, background: theme.cardAlt, border: `1px solid ${theme.border}`, borderRadius: 99, padding: "2px 8px" }}>{m}</span>; })}
+                        {members.map((m, i) => <span key={i} style={{ fontSize: 11, color: theme.muted, background: theme.cardAlt, border: `1px solid ${theme.border}`, borderRadius: 99, padding: "2px 8px" }}>{m}</span>)}
                       </div>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, marginLeft: 12 }}>
-                      {match > 0 && <span style={{ fontSize: 11, fontWeight: 700, color: match >= 80 ? "#10b981" : match >= 50 ? "#f59e0b" : "#ef4444" }}>{match}% match</span>}
-                      <button onClick={function() { handleJoinTeam(t); }} style={{ padding: "7px 16px", borderRadius: 8, border: `1px solid ${alreadyIn ? "#10b98144" : "#6366f144"}`, background: alreadyIn ? "#10b98111" : "#6366f111", color: alreadyIn ? "#6ee7b7" : "#818cf8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                        {alreadyIn ? "Joined" : "Join"}
-                      </button>
-                      <button onClick={function() { setActiveChat(t); }} style={{ padding: "7px 16px", borderRadius: 8, border: "1px solid #6366f144", background: "#6366f111", color: "#818cf8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>💬 Chat</button>
-
-                      {/* Find Members button — only visible to team leader */}
-                      {isLeader && (
-                        <button onClick={function() { setSuggestTeam(t); }} style={{ padding: "7px 16px", borderRadius: 8, border: "1px solid #f59e0b44", background: "#f59e0b11", color: "#fcd34d", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>
-                          ✨ Find Members
-                        </button>
-                      )}
+                      {match > 0 && <span style={{ fontSize: 12, fontWeight: 700, color: match >= 80 ? "#10b981" : match >= 50 ? "#f59e0b" : "#ef4444", background: (match >= 80 ? "#10b981" : match >= 50 ? "#f59e0b" : "#ef4444") + "15", borderRadius: 99, padding: "2px 10px" }}>{match}%</span>}
+                      <button onClick={() => handleJoinTeam(t)} style={joinBtn(alreadyIn)}>{alreadyIn ? "✓ Joined" : "Join"}</button>
+                      <button onClick={() => setActiveChat(t)} style={{ ...joinBtn(false) }}>💬 Chat</button>
+                      {isLeader && <button onClick={() => setSuggestTeam(t)} style={{ padding: "7px 16px", borderRadius: 9, border: "1px solid #f59e0b44", background: "#f59e0b11", color: "#f59e0b", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>✨ Find Members</button>}
                     </div>
                   </div>
                 </div>
@@ -613,45 +522,51 @@ export default function App() {
           </div>
         )}
 
-        {/* ── CREATE ── */}
         {tab === 3 && (
-  <Chat joinedTeams={joinedTeams} currentUser={currentUser} profile={profile} theme={theme} allTeams={teams} onBack={function() { setTab(0); }} />
-)}
+          <Chat joinedTeams={joinedTeams} currentUser={currentUser} profile={profile} theme={theme} allTeams={teams} />
+        )}
+
         {tab === 4 && (
           <div>
-            <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 16, padding: 20, marginBottom: 20 }}>
-              <h2 style={{ fontWeight: 700, fontSize: 18, color: theme.text, margin: "0 0 6px" }}>Create a Team</h2>
-              <p style={{ fontSize: 13, color: theme.muted, margin: "0 0 20px" }}>Create your team and find the best candidates</p>
-              <input placeholder="Team Name" value={teamName} onChange={function(e) { setTeamName(e.target.value); }} style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: theme.cardAlt, border: `1px solid ${theme.border}`, color: theme.text, fontSize: 14, marginBottom: 12, boxSizing: "border-box" }} />
-              <input placeholder="Required Skills (e.g. React, Node, ML)" value={teamSkills} onChange={function(e) { setTeamSkills(e.target.value); }} style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: theme.cardAlt, border: `1px solid ${theme.border}`, color: theme.text, fontSize: 14, marginBottom: 12, boxSizing: "border-box" }} />
-              <textarea placeholder="Description (optional)" value={teamDesc} onChange={function(e) { setTeamDesc(e.target.value); }} style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: theme.cardAlt, border: `1px solid ${theme.border}`, color: theme.text, fontSize: 14, marginBottom: 16, boxSizing: "border-box", height: 80, resize: "none" }} />
-              <button onClick={handleCreateTeam} disabled={creating} style={{ width: "100%", padding: 14, borderRadius: 10, border: "none", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "#fff", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
-                {creating ? "Creating..." : "Create Team"}
+            <div style={{ ...cardStyle, background: `linear-gradient(135deg, ${theme.card}, ${theme.cardAlt})` }}>
+              <h2 style={{ fontWeight: 800, fontSize: 20, color: theme.text, margin: "0 0 6px" }}>Create a Team</h2>
+              <p style={{ fontSize: 13, color: theme.muted, margin: "0 0 24px" }}>Build your dream team and win together 🏆</p>
+              <input placeholder="Team Name" value={teamName} onChange={e => setTeamName(e.target.value)} style={{ ...inputStyle, marginBottom: 12 }} />
+              <input placeholder="Required Skills (e.g. React, Node, ML)" value={teamSkills} onChange={e => setTeamSkills(e.target.value)} style={{ ...inputStyle, marginBottom: 12 }} />
+              <textarea placeholder="Description (optional)" value={teamDesc} onChange={e => setTeamDesc(e.target.value)} style={{ ...inputStyle, height: 90, resize: "none", marginBottom: 20, paddingTop: 12 }} />
+              <button onClick={handleCreateTeam} disabled={creating} style={{ ...primaryBtn, width: "100%", padding: "14px", fontSize: 15 }}>
+                {creating ? "Creating..." : "🚀 Create Team"}
               </button>
             </div>
-            <h3 style={{ fontWeight: 700, fontSize: 13, color: theme.muted, margin: "0 0 12px", letterSpacing: 1, textTransform: "uppercase" }}>Find People by Skill</h3>
-            <input style={{ width: "100%", padding: "12px 16px", borderRadius: 12, background: theme.card, border: `1px solid ${theme.border}`, color: theme.text, fontSize: 14, marginBottom: 16, boxSizing: "border-box" }} placeholder="Type a skill..." value={searchSkills} onChange={function(e) { setSearchSkills(e.target.value); }} />
-            {searchSkills && users.filter(function(u) { return u.skills?.toLowerCase().includes(searchSkills.toLowerCase()); }).map(function(u) {
-              return (
-                <div key={u.id} style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 16, padding: 20, marginBottom: 12 }}>
-                  <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-                    <Avatar name={u.name} size={40} />
-                    <div>
-                      <h3 style={{ fontWeight: 700, fontSize: 15, color: theme.text, margin: "0 0 4px" }}>{u.name}</h3>
-                      <div>{u.skills?.split(",").map(function(s, i) { return <SkillBadge key={i} skill={s} highlight={s.toLowerCase().includes(searchSkills.toLowerCase())} />; })}</div>
-                    </div>
+
+            <h3 style={{ fontWeight: 700, fontSize: 12, color: theme.muted, margin: "24px 0 14px", letterSpacing: 1.5, textTransform: "uppercase" }}>Find People by Skill</h3>
+            <input style={{ ...inputStyle, marginBottom: 16 }} placeholder="🔍 Type a skill..." value={searchSkills} onChange={e => setSearchSkills(e.target.value)} />
+            {searchSkills && users.filter(u => u.skills?.toLowerCase().includes(searchSkills.toLowerCase())).map(u => (
+              <div key={u.id} style={cardStyle}>
+                <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+                  <Avatar name={u.name} size={42} />
+                  <div>
+                    <h3 style={{ fontWeight: 700, fontSize: 14, color: theme.text, margin: "0 0 6px" }}>{u.name}</h3>
+                    <div>{u.skills?.split(",").map((s, i) => <SkillBadge key={i} skill={s} highlight={s.toLowerCase().includes(searchSkills.toLowerCase())} theme={theme} />)}</div>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
 
-        {activeChat && <Chat team={activeChat} userName={profile?.name || "Anonymous"} onClose={function() { setActiveChat(null); }} theme={theme} />}
+        {activeChat && <Chat team={activeChat} userName={profile?.name || "Anonymous"} onClose={() => setActiveChat(null)} theme={theme} />}
       </main>
     </div>
   );
 }
 
-const dark = { bg: "#080810", card: "#0f0f1e", cardAlt: "#ffffff08", border: "#ffffff0f", text: "#e2e8f0", muted: "#64748b" };
-const light = { bg: "#f1f5f9", card: "#ffffff", cardAlt: "#f8fafc", border: "#e2e8f0", text: "#0f172a", muted: "#64748b" };
+const dark = {
+  bg: "#0a0118", card: "#130727", cardAlt: "#1e0f35", border: "#3b1f6a",
+  text: "#f1e8ff", muted: "#8b6aaa", accent: "#a855f7", accentBg: "#2d1052", accentBorder: "#7c3aed44",
+};
+
+const light = {
+  bg: "#f8f5ff", card: "#ffffff", cardAlt: "#f3f0ff", border: "#ede9fe",
+  text: "#0f172a", muted: "#7c6a94", accent: "#7c3aed", accentBg: "#f3f0ff", accentBorder: "#ddd6fe",
+};
