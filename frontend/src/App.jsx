@@ -21,12 +21,12 @@ function safeMembers(raw) {
   return [];
 }
 
-function Avatar({ name, size = 40 }) {
+function Avatar({ name, size = 40, className = "" }) {
   const n = name || "?";
   const colors = ["#7c3aed","#a855f7","#6366f1","#ec4899","#f59e0b","#10b981","#3b82f6"];
   const color = colors[n.charCodeAt(0) % colors.length];
   return (
-    <div style={{ width: size, height: size, borderRadius: "50%", background: `linear-gradient(135deg, ${color}, ${color}99)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: size * 0.38, flexShrink: 0, boxShadow: `0 2px 8px ${color}44` }}>
+    <div className={`hm-avatar ${className}`} style={{ width: size, height: size, borderRadius: "50%", background: `linear-gradient(135deg, ${color}, ${color}99)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: size * 0.38, flexShrink: 0, boxShadow: `0 2px 8px ${color}44` }}>
       {n.charAt(0).toUpperCase()}
     </div>
   );
@@ -87,7 +87,7 @@ function SuggestionsModal({ team, users, invites, onInvite, onClose, theme }) {
           return (
             <div key={user.id} style={{ background: theme.cardAlt, border: `1px solid ${theme.border}`, borderRadius: 14, padding: 16, marginBottom: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <Avatar name={user.name} size={42} />
+                <Avatar className="hm-avatar" name={user.name} size={42} />
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{ fontWeight: 700, fontSize: 14, color: theme.text }}>{user.name}</span>
@@ -340,15 +340,33 @@ export default function App() {
 
           {authMode === "register" && (
             <>
-              <input placeholder="Full Name" value={authName} onChange={e => setAuthName(e.target.value)} style={{ ...inputStyle, marginBottom: 12 }} />
-              <input placeholder="Skills (e.g. React, ML, Node)" value={authSkills} onChange={e => setAuthSkills(e.target.value)} style={{ ...inputStyle, marginBottom: 12 }} />
+              <input placeholder="Full Name" value={authName} onChange={e => setAuthName(e.target.value)} className="hm-input" style={{ ...inputStyle, marginBottom: 12 }} />
+              <input placeholder="Skills (e.g. React, ML, Node)" value={authSkills} onChange={e => setAuthSkills(e.target.value)} className="hm-input" style={{ ...inputStyle, marginBottom: 12 }} />
             </>
           )}
-          <input placeholder="Email" type="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} style={{ ...inputStyle, marginBottom: 12 }} />
-          <input placeholder="Password" type="password" value={authPass} onChange={e => setAuthPass(e.target.value)} style={{ ...inputStyle, marginBottom: 20 }} />
+          <input placeholder="Email" type="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} className="hm-input" style={{ ...inputStyle, marginBottom: 12 }} />
+          <input placeholder="Password" type="password" value={authPass} onChange={e => setAuthPass(e.target.value)} className="hm-input" style={{ ...inputStyle, marginBottom: 20 }} />
           <button onClick={authMode === "login" ? handleLogin : handleRegister} disabled={authLoading} style={{ ...primaryBtn, width: "100%", padding: "13px", fontSize: 15 }}>
             {authLoading ? "Loading..." : authMode === "login" ? "Login →" : "Create Account →"}
           </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "16px 0" }}>
+  <div style={{ flex: 1, height: 1, background: theme.border }} />
+  <span style={{ color: theme.muted, fontSize: 12 }}>or</span>
+  <div style={{ flex: 1, height: 1, background: theme.border }} />
+</div>
+
+<button
+  onClick={async function() {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin }
+    });
+  }}
+  style={{ width: "100%", padding: "12px", borderRadius: 10, border: `1.5px solid ${theme.border}`, background: theme.cardAlt, color: theme.text, fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}
+>
+  <img src="https://www.google.com/favicon.ico" width="18" height="18" alt="Google" />
+  Continue with Google
+</button>
         </div>
       </div>
     );
@@ -374,7 +392,7 @@ export default function App() {
               🔔
               {pendingInviteCount > 0 && <span style={{ position: "absolute", top: -4, right: -4, background: "#ef4444", color: "#fff", borderRadius: 99, fontSize: 9, fontWeight: 700, padding: "2px 5px" }}>{pendingInviteCount}</span>}
             </button>
-            <Avatar name={profile?.name || "U"} size={32} />
+            <Avatar className="hm-avatar" name={profile?.name || "U"} size={32} />
             <span style={{ fontSize: 13, color: theme.muted, fontWeight: 500 }}>{profile?.name}</span>
             <button onClick={handleLogout} style={{ ...ghostBtn, padding: "6px 14px", fontSize: 12 }}>Logout</button>
           </div>
@@ -395,16 +413,16 @@ export default function App() {
           <div>
             <div style={{ ...cardStyle, background: `linear-gradient(135deg, ${theme.card}, ${theme.cardAlt})` }}>
               <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
-                <Avatar name={profile?.name} size={58} />
+                <Avatar className="hm-avatar" name={profile?.name} size={58} />
                 <div style={{ flex: 1 }}>
                   {editMode ? (
                     <>
-                      <input value={editName} onChange={e => setEditName(e.target.value)} placeholder="Name" style={{ ...inputStyle, marginBottom: 10 }} />
-                      <input value={editSkills} onChange={e => setEditSkills(e.target.value)} placeholder="Skills" style={{ ...inputStyle, marginBottom: 10 }} />
+                      <input value={editName} onChange={e => setEditName(e.target.value)} placeholder="Name" className="hm-input" style={{ ...inputStyle, marginBottom: 10 }} />
+                      <input value={editSkills} onChange={e => setEditSkills(e.target.value)} placeholder="Skills" className="hm-input" style={{ ...inputStyle, marginBottom: 10 }} />
                       <AISuggest theme={theme} onSelect={skill => setEditSkills(prev => prev ? prev + ", " + skill : skill)} />
                       <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
-                        <button onClick={saveProfile} style={primaryBtn}>Save</button>
-                        <button onClick={() => setEditMode(false)} style={ghostBtn}>Cancel</button>
+                        <button onClick={saveProfile} className="hm-btn-primary hm-ripple" style={primaryBtn}>Save</button>
+                        <button onClick={() => setEditMode(false)} className="hm-btn-ghost" className="hm-btn-ghost" style={ghostBtn}>Cancel</button>
                       </div>
                     </>
                   ) : (
@@ -414,7 +432,7 @@ export default function App() {
                           <h2 style={{ fontWeight: 800, fontSize: 19, color: theme.text, margin: "0 0 3px" }}>{profile?.name}</h2>
                           <p style={{ color: theme.muted, fontSize: 12, margin: "0 0 10px" }}>{profile?.email || currentUser?.email}</p>
                         </div>
-                        <button onClick={() => { setEditMode(true); setEditName(profile?.name || ""); setEditSkills(profile?.skills || ""); }} style={ghostBtn}>Edit Profile</button>
+                        <button onClick={() => { setEditMode(true); setEditName(profile?.name || ""); setEditSkills(profile?.skills || ""); }} className="hm-btn-ghost" style={ghostBtn}>Edit Profile</button>
                       </div>
                       <div>{profile?.skills?.split(",").map((s, i) => <SkillBadge key={i} skill={s} highlight theme={theme} />)}</div>
                     </>
@@ -466,12 +484,12 @@ export default function App() {
 
         {tab === 1 && (
           <div>
-            <input style={{ ...inputStyle, marginBottom: 16 }} placeholder="🔍 Search by name or skill..." value={userSearch} onChange={e => setUserSearch(e.target.value)} />
+            <input className="hm-input" className="hm-input" style={{ ...inputStyle, marginBottom: 16 }} placeholder="🔍 Search by name or skill..." value={userSearch} onChange={e => setUserSearch(e.target.value)} />
             {filteredUsers.length === 0 && <div style={{ ...cardStyle, textAlign: "center", color: theme.muted, padding: 40 }}>No users found</div>}
             {filteredUsers.map(u => (
-              <div key={u.id} style={cardStyle}>
+              <div key={u.id} className="hm-card" className="hm-card" style={cardStyle}>
                 <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-                  <Avatar name={u.name} size={46} />
+                  <Avatar className="hm-avatar" name={u.name} size={46} />
                   <div style={{ flex: 1 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
                       <h3 style={{ fontWeight: 700, fontSize: 15, color: theme.text, margin: 0 }}>{u.name}</h3>
@@ -487,7 +505,7 @@ export default function App() {
 
         {tab === 2 && (
           <div>
-            <input style={{ ...inputStyle, marginBottom: 16 }} placeholder="🔍 Search teams or skills..." value={teamSearch} onChange={e => setTeamSearch(e.target.value)} />
+            <input className="hm-input" className="hm-input" style={{ ...inputStyle, marginBottom: 16 }} placeholder="🔍 Search teams or skills..." value={teamSearch} onChange={e => setTeamSearch(e.target.value)} />
             {filteredTeams.length === 0 && <div style={{ ...cardStyle, textAlign: "center", color: theme.muted, padding: 40 }}>No teams found</div>}
             {filteredTeams.map(t => {
               const members = safeMembers(t.members);
@@ -495,7 +513,7 @@ export default function App() {
               const alreadyIn = joinedTeams.includes(t.id) || members.includes(profile?.name);
               const isLeader = t.creator_id === currentUser?.id;
               return (
-                <div key={t.id} style={cardStyle}>
+                <div key={t.id} className="hm-card" className="hm-card" style={cardStyle}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
@@ -531,20 +549,20 @@ export default function App() {
             <div style={{ ...cardStyle, background: `linear-gradient(135deg, ${theme.card}, ${theme.cardAlt})` }}>
               <h2 style={{ fontWeight: 800, fontSize: 20, color: theme.text, margin: "0 0 6px" }}>Create a Team</h2>
               <p style={{ fontSize: 13, color: theme.muted, margin: "0 0 24px" }}>Build your dream team and win together 🏆</p>
-              <input placeholder="Team Name" value={teamName} onChange={e => setTeamName(e.target.value)} style={{ ...inputStyle, marginBottom: 12 }} />
-              <input placeholder="Required Skills (e.g. React, Node, ML)" value={teamSkills} onChange={e => setTeamSkills(e.target.value)} style={{ ...inputStyle, marginBottom: 12 }} />
-              <textarea placeholder="Description (optional)" value={teamDesc} onChange={e => setTeamDesc(e.target.value)} style={{ ...inputStyle, height: 90, resize: "none", marginBottom: 20, paddingTop: 12 }} />
+              <input placeholder="Team Name" value={teamName} onChange={e => setTeamName(e.target.value)} className="hm-input" className="hm-input" style={{ ...inputStyle, marginBottom: 12 }} />
+              <input placeholder="Required Skills (e.g. React, Node, ML)" value={teamSkills} onChange={e => setTeamSkills(e.target.value)} className="hm-input" className="hm-input" style={{ ...inputStyle, marginBottom: 12 }} />
+              <textarea placeholder="Description (optional)" value={teamDesc} onChange={e => setTeamDesc(e.target.value)} className="hm-input" className="hm-input" style={{ ...inputStyle, height: 90, resize: "none", marginBottom: 20, paddingTop: 12 }} />
               <button onClick={handleCreateTeam} disabled={creating} style={{ ...primaryBtn, width: "100%", padding: "14px", fontSize: 15 }}>
                 {creating ? "Creating..." : "🚀 Create Team"}
               </button>
             </div>
 
             <h3 style={{ fontWeight: 700, fontSize: 12, color: theme.muted, margin: "24px 0 14px", letterSpacing: 1.5, textTransform: "uppercase" }}>Find People by Skill</h3>
-            <input style={{ ...inputStyle, marginBottom: 16 }} placeholder="🔍 Type a skill..." value={searchSkills} onChange={e => setSearchSkills(e.target.value)} />
+            <input className="hm-input" className="hm-input" style={{ ...inputStyle, marginBottom: 16 }} placeholder="🔍 Type a skill..." value={searchSkills} onChange={e => setSearchSkills(e.target.value)} />
             {searchSkills && users.filter(u => u.skills?.toLowerCase().includes(searchSkills.toLowerCase())).map(u => (
-              <div key={u.id} style={cardStyle}>
+              <div key={u.id} className="hm-card" className="hm-card" style={cardStyle}>
                 <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-                  <Avatar name={u.name} size={42} />
+                  <Avatar className="hm-avatar" className="hm-avatar" name={u.name} size={42} />
                   <div>
                     <h3 style={{ fontWeight: 700, fontSize: 14, color: theme.text, margin: "0 0 6px" }}>{u.name}</h3>
                     <div>{u.skills?.split(",").map((s, i) => <SkillBadge key={i} skill={s} highlight={s.toLowerCase().includes(searchSkills.toLowerCase())} theme={theme} />)}</div>
