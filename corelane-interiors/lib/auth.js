@@ -5,7 +5,7 @@ export const authOptions = {
     CredentialsProvider({
       name: 'Admin Login',
       credentials: {
-        email:    { label: 'Email', type: 'email' },
+        email:    { label: 'Email',    type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
